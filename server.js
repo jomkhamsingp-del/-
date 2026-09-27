@@ -303,4 +303,8 @@ app.delete('/saved-figures/:id', (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`Figure price search: http://localhost:${PORT}`));
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`Figure price search: http://localhost:${PORT}`));
+}
+
+module.exports = app;
