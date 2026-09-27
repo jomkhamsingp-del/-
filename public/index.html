@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Figure Price Search | CollectAIO</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202b27;
+      --muted: #65716b;
+      --line: #dce3de;
+      --paper: #f3f6f2;
+      --surface: #fff;
+      --green: #176b52;
+      --green-dark: #104c3b;
+      --coral: #c55b42;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Trebuchet MS", "Leelawadee UI", sans-serif; }
+    header { background: var(--green-dark); color: #fff; padding: 24px max(22px, calc((100vw - 1120px) / 2)); }
+    .brand-line { color: #b8d9c9; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+    header h1 { margin: 5px 0 0; font-family: Georgia, "Leelawadee UI", serif; font-size: 30px; font-weight: 500; }
+    header p { margin: 5px 0 0; color: #d0e3d8; font-size: 14px; }
+    main { max-width: 1120px; margin: 0 auto; padding: 24px 22px 48px; }
+    #error { margin-bottom: 16px; padding: 12px 14px; border-left: 4px solid #b93832; background: #fff0ed; color: #8f2925; }
+    #error[hidden] { display: none; }
+    .search-section { padding: 0 0 22px; border-bottom: 1px solid var(--line); }
+    .section-kicker { margin: 0 0 8px; color: var(--coral); font-size: 12px; font-weight: 700; text-transform: uppercase; }
+    h2 { margin: 0 0 16px; font-family: Georgia, "Leelawadee UI", serif; font-size: 23px; font-weight: 500; }
+    .search-form { display: flex; gap: 8px; max-width: 720px; }
+    input, select, button { min-height: 42px; border: 1px solid #bdc9c1; border-radius: 4px; background: var(--surface); color: var(--ink); font: inherit; }
+    input, select { padding: 8px 11px; }
+    input:focus, select:focus, button:focus-visible { outline: 3px solid #83baa2; outline-offset: 2px; }
+    .search-form input { flex: 1; min-width: 0; }
+    button { padding: 8px 16px; cursor: pointer; font-weight: 700; }
+    button.primary { border-color: var(--green); background: var(--green); color: white; }
+    button:disabled { cursor: not-allowed; opacity: .45; }
+    .controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: end; margin-top: 18px; }
+    .control { display: grid; gap: 5px; }
+    .control label { color: var(--muted); font-size: 12px; font-weight: 700; }
+    #listSearch { width: min(100%, 340px); }
+    .results-section { padding-top: 22px; }
+    .results-heading { display: flex; justify-content: space-between; gap: 16px; align-items: end; margin-bottom: 8px; }
+    .results-heading h2 { margin-bottom: 0; }
+    #resultInfo, #pageInfo { color: var(--muted); font-size: 12px; }
+    .figure-row { display: grid; grid-template-columns: 68px minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 14px 4px; border-bottom: 1px solid var(--line); }
+    .figure-image { width: 68px; height: 68px; border-radius: 3px; object-fit: contain; background: #e9efea; }
+    .figure-details { min-width: 0; }
+    .figure-details h3 { margin: 0 0 5px; font-size: 15px; line-height: 1.4; }
+    .figure-details p { margin: 0 0 4px; color: var(--muted); font-size: 12px; }
+    .price-source { color: var(--green); font-size: 11px; }
+    .item-detail { display: block; color: var(--muted); font-size: 11px; }
+    .figure-price { padding-left: 12px; color: var(--green-dark); font-size: 18px; font-weight: 700; white-space: nowrap; }
+    .figure-actions { display: grid; justify-items: end; gap: 7px; }
+    .small-button { min-height: 32px; padding: 5px 9px; font-size: 12px; }
+    .danger-button { color: #9b3029; border-color: #e3aaa3; }
+    .saved-section { margin-top: 42px; padding-top: 26px; border-top: 2px solid var(--green); }
+    .saved-toolbar { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: end; margin: 18px 0; }
+    .saved-toolbar .control { flex: 1 1 150px; }
+    .saved-toolbar input, .saved-toolbar select { width: 100%; }
+    .figure-form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 16px; border: 1px solid var(--line); background: #edf4ef; }
+    .figure-form .control input { width: 100%; }
+    .figure-form-actions { display: flex; align-items: end; gap: 8px; }
+    .figure-form-actions button { min-height: 42px; }
+    .saved-row .figure-actions { grid-template-columns: auto auto; }
+    .saved-row .figure-actions .figure-price { grid-column: 1 / -1; }
+    .empty { padding: 24px 4px; color: var(--muted); }
+    .pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 16px; }
+    @media (max-width: 620px) {
+      header { padding: 20px 18px; }
+      header h1 { font-size: 25px; }
+      main { padding: 20px 16px 36px; }
+      .search-form { flex-direction: column; }
+      .search-form button { width: 100%; }
+      .controls { align-items: stretch; }
+      .control { flex: 1 1 140px; }
+      .control select { width: 100%; }
+      .results-heading { display: block; }
+      #resultInfo { display: block; margin-top: 8px; }
+      .figure-row { grid-template-columns: 54px minmax(0, 1fr); gap: 11px; }
+      .figure-image { width: 54px; height: 60px; }
+      .figure-price { grid-column: 2; padding: 0; font-size: 16px; }
+      .figure-actions { grid-column: 2; justify-items: start; display: flex; flex-wrap: wrap; align-items: center; }
+      .saved-row .figure-actions .figure-price { grid-column: auto; }
+      .pagination button { padding: 8px 10px; }
+      .figure-form { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand-line">CollectAIO · Market lookup</div>
+    <h1>ค้นหาราคาฟิกเกอร์</h1>
+    <p>ค้นหาโมเดลแอ็กชันฟิกเกอร์จาก CollectAIO และเรียงราคา</p>
+  </header>
+
+  <main>
+    <div id="error" role="alert" hidden></div>
+
+    <section class="search-section" aria-labelledby="searchTitle">
+      <p class="section-kicker">ค้นหาจากฐานข้อมูล</p>
+      <h2 id="searchTitle">ค้นหาสินค้า</h2>
+      <form class="search-form" id="apiSearchForm">
+        <input id="apiSearch" type="search" value="figure" aria-label="คำค้น CollectAIO" placeholder="เช่น figure, Pikachu, Gundam">
+        <button class="primary" type="submit">ค้นหา CollectAIO</button>
+      </form>
+
+      <div class="controls">
+        <div class="control">
+          <label for="listSearch">ค้นหาในรายการหน้านี้</label>
+          <input id="listSearch" type="search" placeholder="ชื่อสินค้า หรือหมวดหมู่">
+        </div>
+        <div class="control">
+          <label for="sortAlgorithm">วิธีเรียงราคา</label>
+          <select id="sortAlgorithm">
+            <option value="selection">Selection Sort</option>
+            <option value="insertion">Insertion Sort</option>
+            <option value="bubble">Bubble Sort</option>
+          </select>
+        </div>
+        <div class="control">
+          <label for="sortDirection">ลำดับราคา</label>
+          <select id="sortDirection">
+            <option value="asc">น้อยไปมาก</option>
+            <option value="desc">มากไปน้อย</option>
+          </select>
+        </div>
+        <div class="control">
+          <label for="perPage">รายการต่อหน้า</label>
+          <select id="perPage">
+            <option value="6">6 รายการ</option>
+            <option value="12" selected>12 รายการ</option>
+            <option value="24">24 รายการ</option>
+            <option value="48">48 รายการ</option>
+          </select>
+        </div>
+        <div class="control">
+          <label for="apiType">ประเภทฟิกเกอร์</label>
+          <input id="apiType" placeholder="เช่น The Black Series">
+        </div>
+        <div class="control">
+          <label for="minPrice">ราคาต่ำสุด (บาท)</label>
+          <input id="minPrice" type="number" min="0" step="0.01" placeholder="0">
+        </div>
+        <div class="control">
+          <label for="maxPrice">ราคาสูงสุด (บาท)</label>
+          <input id="maxPrice" type="number" min="0" step="0.01" placeholder="ไม่จำกัด">
+        </div>
+      </div>
+    </section>
+
+    <section class="results-section" aria-labelledby="resultsTitle">
+      <div class="results-heading">
+        <div>
+          <p class="section-kicker">ผลลัพธ์</p>
+          <h2 id="resultsTitle">รายการฟิกเกอร์</h2>
+        </div>
+        <span id="resultInfo"></span>
+      </div>
+      <div id="results" aria-live="polite"></div>
+      <nav class="pagination" aria-label="เปลี่ยนหน้าผลลัพธ์">
+        <button id="previousPage" type="button">← ก่อนหน้า</button>
+        <span id="pageInfo"></span>
+        <button id="nextPage" type="button">ถัดไป →</button>
+      </nav>
+    </section>
+
+    <section class="saved-section" aria-labelledby="savedTitle">
+      <p class="section-kicker">จัดการข้อมูลที่บันทึก</p>
+      <div class="results-heading">
+        <h2 id="savedTitle">รายการฟิกเกอร์ที่จัดเก็บไว้</h2>
+        <span id="savedInfo"></span>
+      </div>
+
+      <form class="figure-form" id="figureForm">
+        <h3 id="figureFormTitle" style="grid-column: 1 / -1; margin: 0;">เพิ่มฟิกเกอร์ในรายการจัดเก็บ</h3>
+        <div class="control"><label for="figureName">ชื่อฟิกเกอร์</label><input id="figureName" required></div>
+        <div class="control"><label for="figureCharacter">ตัวละคร</label><input id="figureCharacter" required></div>
+        <div class="control"><label for="figureType">ประเภท</label><input id="figureType" required placeholder="เช่น Action Figure"></div>
+        <div class="control"><label for="figurePrice">ราคา (บาท)</label><input id="figurePrice" type="number" min="0" step="0.01"></div>
+        <div class="control"><label for="figureStore">ร้านค้า/แหล่งราคา</label><input id="figureStore" placeholder="เช่น eBay, CollectAIO"></div>
+        <div class="control"><label for="figureReleaseDate">วันที่วางจำหน่าย</label><input id="figureReleaseDate" type="date"></div>
+        <div class="control"><label for="figureImage">URL รูปภาพ</label><input id="figureImage" type="url"></div>
+        <div class="figure-form-actions"><button class="primary" type="submit">บันทึกข้อมูล</button><button id="cancelEdit" type="button" hidden>ยกเลิกแก้ไข</button></div>
+      </form>
+
+      <div class="saved-toolbar">
+        <div class="control"><label for="savedSearch">ค้นหาที่จัดเก็บ</label><input id="savedSearch" placeholder="ชื่อ ตัวละคร หรือประเภท"></div>
+        <div class="control"><label for="savedType">ประเภท</label><input id="savedType" placeholder="เช่น Action Figure"></div>
+        <div class="control"><label for="savedMinPrice">ราคาต่ำสุด (บาท)</label><input id="savedMinPrice" type="number" min="0" step="0.01"></div>
+        <div class="control"><label for="savedMaxPrice">ราคาสูงสุด (บาท)</label><input id="savedMaxPrice" type="number" min="0" step="0.01"></div>
+        <div class="control"><label for="savedSort">เรียงตามราคา</label><select id="savedSort"><option value="selection">Selection Sort</option><option value="insertion">Insertion Sort</option><option value="bubble">Bubble Sort</option></select></div>
+        <div class="control"><label for="savedDirection">ลำดับ</label><select id="savedDirection"><option value="asc">น้อยไปมาก</option><option value="desc">มากไปน้อย</option></select></div>
+        <div class="control"><label for="savedPerPage">รายการต่อหน้า</label><select id="savedPerPage"><option value="6">6</option><option value="12" selected>12</option><option value="24">24</option><option value="48">48</option></select></div>
+      </div>
+      <div id="savedResults" aria-live="polite"></div>
+      <nav class="pagination" aria-label="เปลี่ยนหน้ารายการที่จัดเก็บ">
+        <button id="savedPreviousPage" type="button">← ก่อนหน้า</button>
+        <span id="savedPageInfo">หน้า 1</span>
+        <button id="savedNextPage" type="button">ถัดไป →</button>
+      </nav>
+    </section>
+  </main>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

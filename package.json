@@ -1,0 +1,15 @@
+{
+  "name": "801201-week8",
+  "version": "1.0.0",
+  "description": "CollectAIO figure price search with array sorting and search",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^4.22.3"
+  }
+}
