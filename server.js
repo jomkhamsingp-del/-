@@ -15,7 +15,11 @@ let exchangeRateCache = {
 };
 
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 async function getUsdThbRate() {
   if (Date.now() - exchangeRateCache.fetchedAt < 60 * 60 * 1000) return exchangeRateCache;
